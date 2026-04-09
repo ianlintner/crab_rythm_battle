@@ -46,6 +46,7 @@ fn main() {
         // Scene setup on enter Playing
         .add_systems(OnEnter(GameState::Playing), (setup_scene, reset_game_state))
         .add_systems(OnExit(GameState::Playing), cleanup_scene)
+        .add_systems(Update, animate_hit_zones.run_if(in_state(GameState::Playing)))
         // Menu navigation
         .add_systems(Update, menu_input.run_if(in_state(GameState::Menu)))
         // Result screen navigation
@@ -60,6 +61,9 @@ fn main() {
 
 #[derive(Component)]
 struct SceneEntity;
+
+#[derive(Component)]
+struct HitZone;
 
 // ─── Scene setup ──────────────────────────────────────────────────────────────
 
@@ -171,6 +175,7 @@ fn setup_scene(
                 ..default()
             },
             SceneEntity,
+            HitZone,
         ));
     }
 
@@ -199,6 +204,16 @@ fn setup_scene(
             },
             SceneEntity,
         ));
+    }
+}
+
+fn animate_hit_zones(
+    beat: Res<BeatResource>,
+    mut query: Query<&mut Transform, With<HitZone>>,
+) {
+    let pulse = 1.0 + beat.beat_pulse * 0.3;
+    for mut transform in query.iter_mut() {
+        transform.scale = Vec3::new(pulse, 1.0, pulse);
     }
 }
 

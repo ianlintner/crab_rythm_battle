@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use crate::states::GameState;
 use crate::battle::{BattleResource, HitResult};
+use crate::beat::BeatResource;
 use crate::scoring::ScoreResource;
 use crate::constants::STARTING_HP;
 
@@ -50,6 +51,9 @@ struct HitFeedbackText;
 
 #[derive(Component)]
 struct ScoreText;
+
+#[derive(Component)]
+struct CountdownText;
 
 // ─── Menu ─────────────────────────────────────────────────────────────────────
 
@@ -135,10 +139,10 @@ fn setup_menu(mut commands: Commands) {
                 })
                 .with_children(|row| {
                     let keys = [
-                        ("A", Color::rgb(0.2, 0.4, 1.0), "Left Claw"),
-                        ("S", Color::rgb(0.2, 0.9, 0.2), "Left Leg"),
-                        ("D", Color::rgb(1.0, 0.6, 0.1), "Right Leg"),
-                        ("F", Color::rgb(1.0, 0.2, 0.2), "Right Claw"),
+                        ("A / \u{2190}", Color::rgb(0.2, 0.4, 1.0), "Left Claw"),
+                        ("S / \u{2193}", Color::rgb(0.2, 0.9, 0.2), "Left Leg"),
+                        ("D / \u{2191}", Color::rgb(1.0, 0.6, 0.1), "Right Leg"),
+                        ("F / \u{2192}", Color::rgb(1.0, 0.2, 0.2), "Right Claw"),
                     ];
                     for (key, color, label) in keys {
                         row.spawn(NodeBundle {
@@ -326,6 +330,21 @@ fn setup_hud(mut commands: Commands) {
                 });
             });
 
+            // ── Countdown / Song Complete overlay ───────────────────────────
+            root.spawn((
+                TextBundle::from_section(
+                    "",
+                    TextStyle { font_size: 120.0, color: Color::rgba(1.0, 1.0, 1.0, 0.9), ..default() },
+                ).with_style(Style {
+                    position_type: PositionType::Absolute,
+                    top: Val::Percent(35.0),
+                    width: Val::Percent(100.0),
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                }).with_text_justify(JustifyText::Center),
+                CountdownText,
+            ));
+
             // ── Spacer ──────────────────────────────────────────────────────
             root.spawn(NodeBundle {
                 style: Style {
@@ -358,12 +377,14 @@ fn setup_hud(mut commands: Commands) {
 
 fn update_hud(
     battle: Res<BattleResource>,
+    beat: Res<BeatResource>,
     score: Res<ScoreResource>,
     mut player_hp_query: Query<&mut Style, (With<PlayerHpBar>, Without<OpponentHpBar>)>,
     mut opponent_hp_query: Query<&mut Style, (With<OpponentHpBar>, Without<PlayerHpBar>)>,
-    mut combo_query: Query<&mut Text, (With<ComboText>, Without<HitFeedbackText>, Without<ScoreText>)>,
-    mut feedback_query: Query<&mut Text, (With<HitFeedbackText>, Without<ComboText>, Without<ScoreText>)>,
-    mut score_query: Query<&mut Text, (With<ScoreText>, Without<ComboText>, Without<HitFeedbackText>)>,
+    mut combo_query: Query<&mut Text, (With<ComboText>, Without<HitFeedbackText>, Without<ScoreText>, Without<CountdownText>)>,
+    mut feedback_query: Query<&mut Text, (With<HitFeedbackText>, Without<ComboText>, Without<ScoreText>, Without<CountdownText>)>,
+    mut score_query: Query<&mut Text, (With<ScoreText>, Without<ComboText>, Without<HitFeedbackText>, Without<CountdownText>)>,
+    mut countdown_query: Query<&mut Text, (With<CountdownText>, Without<ComboText>, Without<HitFeedbackText>, Without<ScoreText>)>,
 ) {
     // Player HP bar
     if let Ok(mut style) = player_hp_query.get_single_mut() {
@@ -405,6 +426,27 @@ fn update_hud(
     // Score
     if let Ok(mut text) = score_query.get_single_mut() {
         text.sections[0].value = format!("SCORE: {}", score.score);
+    }
+
+    // Countdown / Song Complete
+    if let Ok(mut text) = countdown_query.get_single_mut() {
+        let t = beat.song_time;
+        let (label, color, size) = if t < 1.33 {
+            ("3", Color::rgb(1.0, 1.0, 1.0), 120.0)
+        } else if t < 2.67 {
+            ("2", Color::rgb(1.0, 1.0, 0.5), 120.0)
+        } else if t < 4.0 {
+            ("1", Color::rgb(1.0, 0.8, 0.3), 120.0)
+        } else if t < 5.5 {
+            ("GO!", Color::rgb(0.3, 1.0, 0.3), 120.0)
+        } else if battle.song_complete_timer.is_some() {
+            ("SONG COMPLETE!", Color::rgb(1.0, 1.0, 0.3), 60.0)
+        } else {
+            ("", Color::WHITE, 120.0)
+        };
+        text.sections[0].value = label.to_string();
+        text.sections[0].style.color = color;
+        text.sections[0].style.font_size = size;
     }
 }
 

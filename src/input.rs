@@ -20,15 +20,16 @@ fn handle_input(
     mut score: ResMut<ScoreResource>,
     notes: Query<(Entity, &Note, &Transform)>,
 ) {
-    let lane_keys = [
-        (KeyCode::KeyA, 0usize),
-        (KeyCode::KeyS, 1usize),
-        (KeyCode::KeyD, 2usize),
-        (KeyCode::KeyF, 3usize),
+    let lane_keys: [(usize, &[KeyCode]); 4] = [
+        (0, &[KeyCode::KeyA, KeyCode::ArrowLeft]),
+        (1, &[KeyCode::KeyS, KeyCode::ArrowDown]),
+        (2, &[KeyCode::KeyD, KeyCode::ArrowUp]),
+        (3, &[KeyCode::KeyF, KeyCode::ArrowRight]),
     ];
 
-    for (key, lane) in lane_keys {
-        if keyboard.just_pressed(key) {
+    for (lane, keys) in lane_keys {
+        let pressed = keys.iter().any(|k| keyboard.just_pressed(*k));
+        if pressed {
             // Find the closest note in this lane within GOOD_WINDOW
             let mut best_entity: Option<Entity> = None;
             let mut best_dist = f32::MAX;
