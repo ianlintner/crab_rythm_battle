@@ -1,0 +1,26 @@
+[package]
+name = "crab_rythm_battle"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "crab_rythm_battle"
+path = "src/main.rs"
+
+[[bin]]
+name = "gen_audio"
+path = "src/bin/gen_audio.rs"
+
+[dependencies]
+bevy = { version = "0.13", features = ["default"] }
+rand = "0.8"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = 3
+lto = "thin"
