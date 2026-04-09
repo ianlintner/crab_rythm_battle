@@ -65,15 +65,17 @@ impl BattleResource {
 }
 
 fn check_win_lose_conditions(
-    battle: Res<BattleResource>,
+    mut battle: ResMut<BattleResource>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
     if battle.game_over {
         return;
     }
     if battle.player_hp <= 0.0 {
+        battle.game_over = true;
         next_state.set(GameState::Defeat);
     } else if battle.opponent_hp <= 0.0 {
+        battle.game_over = true;
         next_state.set(GameState::Victory);
     }
 }

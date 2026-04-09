@@ -22,9 +22,7 @@ pub struct Crab {
 }
 
 #[derive(Component)]
-pub struct CrabBody {
-    pub is_player: bool,
-}
+pub struct CrabBody;
 
 fn spawn_crabs(
     mut commands: Commands,
@@ -126,7 +124,7 @@ fn spawn_crab(
                     .with_scale(Vec3::new(1.0, 0.6, 0.8)),
                 ..default()
             },
-            CrabBody { is_player },
+            CrabBody,
         ));
 
         // Left eye stalk

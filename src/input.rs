@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use crate::states::GameState;
 use crate::constants::*;
 use crate::notes::Note;
-use crate::beat::BeatResource;
 use crate::battle::{BattleResource, HitResult};
 use crate::scoring::{ScoreResource, HitTiming};
 
@@ -17,10 +16,9 @@ impl Plugin for InputPlugin {
 fn handle_input(
     mut commands: Commands,
     keyboard: Res<ButtonInput<KeyCode>>,
-    beat: Res<BeatResource>,
     mut battle: ResMut<BattleResource>,
     mut score: ResMut<ScoreResource>,
-    mut notes: Query<(Entity, &Note, &Transform)>,
+    notes: Query<(Entity, &Note, &Transform)>,
 ) {
     let lane_keys = [
         (KeyCode::KeyA, 0usize),

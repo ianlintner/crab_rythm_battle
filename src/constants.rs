@@ -9,7 +9,6 @@ pub const LANE_LENGTH: f32 = 20.0; // total lane length in units
 pub const PERFECT_WINDOW: f32 = 0.5; // z distance for perfect hit
 pub const GOOD_WINDOW: f32 = 1.5; // z distance for good hit
 
-pub const NUM_LANES: usize = 4;
 pub const LANE_X: [f32; 4] = [-4.5, -1.5, 1.5, 4.5];
 
 // Damage values

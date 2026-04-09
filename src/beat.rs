@@ -7,7 +7,8 @@ pub struct BeatPlugin;
 impl Plugin for BeatPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<BeatResource>()
-            .add_systems(Update, update_beat.run_if(in_state(GameState::Playing)));
+            .add_systems(Update, update_beat.run_if(in_state(GameState::Playing)))
+            .add_systems(OnExit(GameState::Playing), stop_beat);
     }
 }
 
@@ -24,6 +25,10 @@ impl BeatResource {
         self.is_playing = true;
         self.beat_pulse = 0.0;
     }
+}
+
+fn stop_beat(mut beat: ResMut<BeatResource>) {
+    beat.is_playing = false;
 }
 
 fn update_beat(

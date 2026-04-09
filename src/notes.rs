@@ -16,7 +16,8 @@ impl Plugin for NotesPlugin {
                 spawn_notes,
                 move_notes,
                 mark_missed_notes,
-            ).run_if(in_state(GameState::Playing)));
+            ).run_if(in_state(GameState::Playing)))
+            .add_systems(OnExit(GameState::Playing), cleanup_notes);
     }
 }
 
@@ -132,6 +133,12 @@ pub fn move_notes(
             let time_to_hit = (note.hit_time - beat.song_time) as f32;
             transform.translation.z = time_to_hit * NOTE_SPEED;
         }
+    }
+}
+
+fn cleanup_notes(mut commands: Commands, notes: Query<Entity, With<Note>>) {
+    for entity in notes.iter() {
+        commands.entity(entity).despawn_recursive();
     }
 }
 
